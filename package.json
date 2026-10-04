@@ -1,0 +1,25 @@
+{
+  "name": "mochila-solidaria",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Plataforma de tiendas solidarias de merchandising para colegios, clubes y asociaciones",
+  "main": "server.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "demo": "node scripts/seed-demo.js && node server.js",
+    "dev": "node server.js",
+    "test": "node test/e2e.js"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "express": "^5.2.1",
+    "pdfkit": "^0.20.2",
+    "pg": "^8.23.1",
+    "qrcode": "^1.5.4",
+    "stripe": "^23.0.0",
+    "svg-to-pdfkit": "^0.1.8"
+  }
+}

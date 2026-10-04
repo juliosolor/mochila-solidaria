@@ -1,0 +1,39 @@
+# Plano para Render (https://render.com): crea el servicio web desde este repositorio.
+# La base de datos se crea aparte (Neon u otro) y se pega en DATABASE_URL.
+services:
+  - type: web
+    name: mochila-solidaria
+    runtime: node
+    plan: starter
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /salud
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: BASE_URL
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: OWNER_EMAIL
+        sync: false
+      - key: OWNER_PASSWORD
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: SUPPLIER_API_TOKEN
+        sync: false
+      - key: SUPPLIER_STORE_ID
+        sync: false
+      - key: SUPPLIER_AUTO_CONFIRM
+        value: "0"
+      - key: CONTACT_EMAIL
+        sync: false
+      - key: LEGAL_NAME
+        sync: false
+      - key: LEGAL_TAX_ID
+        sync: false
+      - key: LEGAL_ADDRESS
+        sync: false
