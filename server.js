@@ -24,6 +24,7 @@ async function build() {
     if (cfg.prod) res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
     next();
   });
+  app.use(require('./lib/candado').candado);
   // Webhook de Stripe: necesita el cuerpo sin procesar
   app.post('/webhook/stripe', express.raw({ type: 'application/json' }), async (req, res) => {
     const stripe = payments.getStripe();

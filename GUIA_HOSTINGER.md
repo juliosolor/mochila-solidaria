@@ -45,3 +45,7 @@ Es la vía que se está usando ahora. Cada proyecto va en su propio contenedor, 
 - Las tipografías van incluidas en la web (carpeta `public/fonts`); no se carga nada de Google.
 - Las claves y contraseñas (`OWNER_PASSWORD`, `DATABASE_URL`, claves de Stripe) escríbelas tú directamente en hPanel; no las pegues en chats ni las guardes en el zip.
 - Si la web no arranca, mira primero los registros (logs) de la app en hPanel.
+
+## Candado de acceso (opcional, para la fase de prueba)
+
+Añade en el compose, dentro de `environment`, la línea `ACCESO_CLAVE: "una-clave-larga"`. El navegador pedirá usuario (por defecto `Julio`, se cambia con `ACCESO_USUARIO`) y esa clave antes de mostrar nada. Sin `ACCESO_CLAVE` la web queda abierta. Sin HTTPS la clave viaja sin cifrar: sirve para que no entren curiosos, no como seguridad definitiva. Quítalo o cámbialo cuando haya dominio con candado.
