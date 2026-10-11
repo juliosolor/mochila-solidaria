@@ -34,7 +34,7 @@ Sirve para ver la web funcionando en Hostinger. No uses datos reales: en este mo
 Es la vía que se está usando ahora. Cada proyecto va en su propio contenedor, así que no se mezcla con nada más del servidor (por ejemplo n8n).
 
 1. Sube el contenido de este zip (descomprimido) a un repositorio de GitHub nuevo llamado `mochila-solidaria`. Contiene el código y el `Dockerfile`, pero ninguna clave.
-2. En hPanel, abre tu VPS y entra en **Administrador de Docker**. Elige **Compose manualmente**, pega el contenido de `compose-mochila-hostinger.yml` y cambia solo los textos que empiezan por `CAMBIA`.
+2. En hPanel, abre tu VPS y entra en **Administrador de Docker**. Elige **Compose manualmente**, pega el contenido de `compose-mochila-hostinger.yml` (está en el repositorio) y cambia solo los textos que empiezan por `CAMBIA`.
 3. Despliega. Cuando termine, la web está en `http://IP-DEL-SERVIDOR:3100`.
 4. Esta fase es solo de prueba: sin candado (http), pagos simulados y sin datos reales. Usa una clave que no uses en ningún otro sitio.
 5. Los datos se guardan en un volumen de Docker y se conservan al reiniciar el contenedor.

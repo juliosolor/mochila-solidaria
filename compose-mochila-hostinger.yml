@@ -1,0 +1,45 @@
+# Mochila Solidaria · plantilla para el Administrador de Docker de Hostinger (VPS)
+#
+# Cómo usarla: hPanel → tu VPS → Administrador de Docker → Compose manualmente.
+# Pega este archivo y cambia SOLO los textos que empiezan por CAMBIA.
+# No guardes aquí las claves reales en GitHub: rellénalas directamente en hPanel.
+#
+# Fase de prueba: pagos simulados, base de datos dentro del servidor (volumen),
+# web en http://IP-DEL-SERVIDOR:3100. Para abrir al público, ver GUIA_HOSTINGER.md.
+
+services:
+  mochila:
+    # Imagen que construye GitHub en cada cambio de la rama main
+    image: ghcr.io/juliosolor/mochila-solidaria:latest
+    restart: unless-stopped
+    ports:
+      - "3100:3000"          # puerto del servidor : puerto de la app
+    volumes:
+      - mochila-datos:/data  # aquí se guarda la base de datos; no se pierde al reiniciar
+    environment:
+      # Dirección con la que se abre la web, sin barra final. Los QR y PDF la usan.
+      BASE_URL: "http://CAMBIA-IP-DEL-SERVIDOR:3100"
+
+      # Acceso al panel del propietario (/propietario/entrar)
+      OWNER_EMAIL: "CAMBIA-tu-correo@ejemplo.es"
+      OWNER_PASSWORD: "CAMBIA-una-clave-larga-que-no-uses-en-otro-sitio"
+
+      # Candado de toda la web (opcional). Bórralo para dejarla abierta.
+      ACCESO_USUARIO: "Julio"
+      ACCESO_CLAVE: "CAMBIA-otra-clave-larga"
+
+      # --- Para abrir al público (déjalo comentado en la fase de prueba) ---
+      # NODE_ENV: "production"
+      # DATABASE_URL: "postgres://..."        # base de datos Neon
+      # STRIPE_SECRET_KEY: "sk_..."
+      # STRIPE_WEBHOOK_SECRET: "whsec_..."
+      # SUPPLIER_API_TOKEN: "..."
+      # SUPPLIER_STORE_ID: "..."
+      # SUPPLIER_AUTO_CONFIRM: "0"            # 0 = pedidos al proveedor como borrador
+      # CONTACT_EMAIL: "contacto@tu-dominio.es"
+      # LEGAL_NAME: "..."
+      # LEGAL_TAX_ID: "..."
+      # LEGAL_ADDRESS: "..."
+
+volumes:
+  mochila-datos:
