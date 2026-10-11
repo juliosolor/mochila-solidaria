@@ -100,12 +100,26 @@ router.get('/propietario/tiendas', async (req, res) => {
   rows.sort((x, y) => y.a.total - x.a.total);
   res.send(shell('/propietario/tiendas', 'Tiendas', `${flash(req)}${rangeBar(r, '/propietario/tiendas')}<div class="card tablewrap"><table class="t"><thead><tr><th>Tienda</th><th class="n">Vendedores</th><th class="n">Pedidos</th><th class="n">Ventas</th><th class="n">Para vendedores</th><th class="n">Coste</th><th class="n">Tarjeta</th><th class="n">Beneficio</th><th class="n">Retirable ahora</th><th>Estado</th></tr></thead><tbody>
   ${rows.map(({ e, a, b }) => `<tr><td><a href="/t/${esc(e.slug)}" target="_blank">${esc(e.name)}</a><div class="note">${esc(e.email)}</div></td><td class="n">${e.nsellers}</td><td class="n">${a.n}</td><td class="n">${eur(a.total)}</td><td class="n">${eur(a.seller)}</td><td class="n">${eur(a.cost)}</td><td class="n">${eur(a.fee)}</td><td class="n"><b>${eur(a.profit)}</b></td><td class="n">${eur(b.available)}</td>
-   <td><form method="post" action="/propietario/tiendas/${e.id}/${e.status === 'active' ? 'suspender' : 'activar'}"><button class="btn ghost sm">${e.status === 'active' ? 'Suspender' : 'Activar'}</button></form></td></tr>`).join('') || '<tr><td colspan="10" class="note">Aún no hay tiendas.</td></tr>'}
+   <td><form method="post" action="/propietario/tiendas/${e.id}/${e.status === 'active' ? 'suspender' : 'activar'}"><button class="btn ghost sm">${e.status === 'active' ? 'Suspender' : 'Activar'}</button></form>
+    <form method="post" action="/propietario/tiendas/${e.id}/clave" style="margin-top:6px"><button class="btn ghost sm">Enlace nueva contraseña</button></form></td></tr>`).join('') || '<tr><td colspan="10" class="note">Aún no hay tiendas.</td></tr>'}
   <tr><td><b>Total</b></td><td class="n">${rows.reduce((x, y) => x + y.e.nsellers, 0)}</td><td class="n">${agg(orders).n}</td><td class="n"><b>${eur(agg(orders).total)}</b></td><td class="n">${eur(agg(orders).seller)}</td><td class="n">${eur(agg(orders).cost)}</td><td class="n">${eur(agg(orders).fee)}</td><td class="n"><b>${eur(agg(orders).profit)}</b></td><td class="n"></td><td></td></tr>
   </tbody></table></div>`));
 });
 for (const [what, st] of [['suspender', 'suspended'], ['activar', 'active']]) router.post(`/propietario/tiendas/:id/${what}`, form, async (req, res) => {
   await db.query('UPDATE entities SET status=$2 WHERE id=$1', [Number(req.params.id) || 0, st]); res.redirect('/propietario/tiendas');
+});
+
+// Enlace de un solo uso para que la entidad cree una contraseña nueva. Se muestra una sola vez; no se guarda en claro.
+router.post('/propietario/tiendas/:id/clave', form, async (req, res) => {
+  const e = await db.one('SELECT id, name, email FROM entities WHERE id=$1', [Number(req.params.id) || 0]);
+  if (!e) return res.redirect('/propietario/tiendas?err=' + encodeURIComponent('Tienda no encontrada.'));
+  const link = `${cfg.baseUrl}/panel/nueva-clave/${await auth.createReset(e.id)}`;
+  res.setHeader('Cache-Control', 'no-store');
+  res.send(shell('/propietario/tiendas', 'Enlace para nueva contraseña', `<div class="card"><p><b>${esc(e.name)}</b> · ${esc(e.email)}</p>
+  <p>Envía este enlace al administrador de la entidad, <b>solo a su correo</b> (${esc(e.email)}). Sirve una sola vez y caduca en ${auth.RESET_HOURS} horas. Si generas otro, este deja de valer.</p>
+  <p><input class="in" readonly value="${esc(link)}" onfocus="this.select()" aria-label="Enlace para nueva contraseña"></p>
+  <p class="note">Por seguridad no se vuelve a mostrar. Comprueba antes que la petición viene de verdad de ese correo.</p>
+  <p><a class="btn ghost" href="/propietario/tiendas">Volver a tiendas</a></p></div>`));
 });
 
 router.get('/propietario/vendedores', async (req, res) => {

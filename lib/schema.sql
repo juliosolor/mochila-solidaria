@@ -94,3 +94,10 @@ CREATE TABLE IF NOT EXISTS settings (
 ALTER TABLE sellers ADD COLUMN IF NOT EXISTS private_token TEXT;
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS buyer_sign TEXT;
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS buyer_message TEXT;
+
+CREATE TABLE IF NOT EXISTS password_resets (
+  token_hash TEXT PRIMARY KEY,      -- sha256 del enlace; el enlace en claro no se guarda
+  entity_id INTEGER NOT NULL REFERENCES entities(id) ON DELETE CASCADE,
+  expires_at TIMESTAMPTZ NOT NULL,
+  used_at TIMESTAMPTZ
+);

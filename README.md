@@ -43,7 +43,7 @@ Los costes, el beneficio y las referencias del proveedor solo se leen en `/propi
 ```bash
 npm install
 npm run demo        # crea datos de ejemplo y arranca en http://localhost:3000
-npm test            # 76 comprobaciones automáticas, con base de datos en memoria
+npm test            # 89 comprobaciones automáticas, con base de datos en memoria
 ```
 
 Sin `DATABASE_URL` usa una base local en `.localdb/`. Sin `STRIPE_SECRET_KEY` el pago es **simulado** (modo demostración); en producción sin Stripe el pago queda desactivado.
