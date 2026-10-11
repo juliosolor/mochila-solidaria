@@ -18,12 +18,34 @@ const flash = (req) => req.query.ok ? alertBox(String(req.query.ok), 'okk') : re
 const bool = (v) => v === '1' || v === 'on' || v === 'si' || v === 'sí' || v === 'true';
 
 // ---------- acceso
-const loginPage = (err = '') => page({ title: `Acceso entidades · ${cfg.brand}`, current: '/panel', body: `<div class="wrap narrow"><div class="hero" style="padding-bottom:10px"><h1>Acceso para entidades</h1></div>
-  ${alertBox(err)}<form class="card" method="post" action="/panel/entrar"><label class="f">Correo electrónico<input class="in" type="email" name="email" required autocomplete="username"></label>
+const loginPage = (err = '', okMsg = '') => page({ title: `Acceso entidades · ${cfg.brand}`, current: '/panel', body: `<div class="wrap narrow"><div class="hero" style="padding-bottom:10px"><h1>Acceso para entidades</h1></div>
+  ${alertBox(okMsg, 'okk')}${alertBox(err)}<form class="card" method="post" action="/panel/entrar"><label class="f">Correo electrónico<input class="in" type="email" name="email" required autocomplete="username"></label>
   <label class="f">Contraseña<input class="in" type="password" name="password" required autocomplete="current-password"></label>
   <button class="btn" type="submit">Entrar</button> <a class="btn ghost" href="/alta">Dar de alta mi entidad</a></form>
-  <p class="note" style="margin-top:12px">¿Has olvidado la contraseña? Escríbenos a <a href="mailto:${esc(cfg.contactEmail)}">${esc(cfg.contactEmail)}</a> desde el correo del administrador.</p></div>` });
-router.get('/panel/entrar', (req, res) => res.send(loginPage()));
+  <p class="note" style="margin-top:12px">¿Has olvidado la contraseña? Escríbenos a <a href="mailto:${esc(cfg.contactEmail)}">${esc(cfg.contactEmail)}</a> desde el correo del administrador y te enviaremos un enlace para crear una nueva.</p></div>` });
+router.get('/panel/entrar', (req, res) => res.send(loginPage('', req.query.clave === 'ok' ? 'Contraseña cambiada. Ya puedes entrar con la nueva.' : '')));
+
+// ---------- nueva contraseña con el enlace de un solo uso (lo genera el propietario)
+const resetPage = (t, r, err = '') => page({ title: `Nueva contraseña · ${cfg.brand}`, current: '/panel', noindex: true, body: `<div class="wrap narrow"><div class="hero" style="padding-bottom:10px"><h1>Nueva contraseña</h1></div>
+  ${r ? `${alertBox(err)}<form class="card" method="post" action="/panel/nueva-clave/${esc(t)}"><p class="note" style="margin-top:0">${esc(r.name)} · ${esc(r.email)}</p>
+  <label class="f">Nueva contraseña (mín. 10 caracteres)<input class="in" type="password" name="new" minlength="10" required autocomplete="new-password"></label>
+  <label class="f">Repítela<input class="in" type="password" name="new2" minlength="10" required autocomplete="new-password"></label>
+  <button class="btn" type="submit">Guardar contraseña</button></form>`
+  : `${alertBox('Este enlace no es válido o ha caducado. Pide uno nuevo escribiendo a ' + cfg.contactEmail + '.')}<p><a class="btn ghost" href="/panel/entrar">Volver al acceso</a></p>`}</div>` });
+router.get('/panel/nueva-clave/:t', async (req, res) => {
+  const r = await auth.findReset(req.params.t);
+  res.status(r ? 200 : 404).send(resetPage(req.params.t, r));
+});
+router.post('/panel/nueva-clave/:t', form, async (req, res) => {
+  if (!rateLimit('reset:' + req.ip, 10, 600_000)) return res.status(429).send(resetPage(req.params.t, null));
+  const r = await auth.findReset(req.params.t);
+  if (!r) return res.status(404).send(resetPage(req.params.t, null));
+  const pw = String(req.body.new || '');
+  if (pw.length < 10) return res.status(400).send(resetPage(req.params.t, r, 'La contraseña debe tener al menos 10 caracteres.'));
+  if (pw !== String(req.body.new2 || '')) return res.status(400).send(resetPage(req.params.t, r, 'Las dos contraseñas no coinciden.'));
+  if (!(await auth.useReset(req.params.t, pw))) return res.status(404).send(resetPage(req.params.t, null));
+  res.redirect('/panel/entrar?clave=ok');
+});
 router.post('/panel/entrar', form, async (req, res) => {
   const email = String(req.body.email || '').trim().toLowerCase();
   if (!rateLimit('login:' + req.ip, 10, 600_000) || !rateLimit('loginm:' + email, 8, 600_000)) return res.status(429).send(loginPage('Demasiados intentos. Espera unos minutos.'));

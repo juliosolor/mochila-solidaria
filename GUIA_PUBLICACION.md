@@ -116,4 +116,4 @@ Estas cosas **no las puede resolver el código** y la web las deja marcadas como
 | Pago hecho pero el pedido sigue «pendiente» | Stripe → Webhooks: ¿URL correcta y secreto igual que `STRIPE_WEBHOOK_SECRET`? |
 | El pedido no llega al proveedor | Tu panel → «Pedidos sin enviar»: lee el motivo (suele ser una referencia de artículo sin rellenar o un token incorrecto) |
 | El QR lleva a una dirección vieja | `BASE_URL` estaba mal cuando se generó; corrígela y vuelve a descargar los PDF |
-| Entidad que no recuerda su clave | Por ahora se restablece a mano en la base de datos; pídele escribir desde su correo de administrador |
+| Entidad que no recuerda su clave | Que te escriba desde su correo de administrador. En tu panel → Tiendas → «Enlace nueva contraseña», copia el enlace y envíaselo a ese correo. Vale una vez y caduca en 48 horas |

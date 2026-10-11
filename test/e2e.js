@@ -113,6 +113,25 @@ const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
     ok(r.text.includes('Modo prueba'), 'avisa de pedidos no enviados al proveedor (sin credenciales)');
     r = await get(owner, '/propietario/tiendas?r=all'); ok(r.text.includes('CEIP Gloria Fuertes') && r.text.includes('6,18'), 'tabla por tienda');
     r = await get(owner, '/propietario/vendedores?r=all'); ok(r.text.includes('Lucía Martín'), 'tabla por vendedor');
+
+    console.log('Recuperación de contraseña');
+    r = await anon('/propietario/tiendas/1/clave', { method: 'POST', form: { x: '1' } }); ok(r.status === 302 && r.loc.includes('/propietario/entrar'), 'solo el propietario genera enlaces');
+    r = await web('/propietario/tiendas/1/clave', { method: 'POST', form: { x: '1' } }); ok(r.status === 302, 'un administrador de entidad no genera enlaces');
+    r = await get(owner, '/propietario/tiendas?r=all'); ok(r.text.includes('Enlace nueva contraseña'), 'botón de enlace en la tabla de tiendas');
+    r = await owner('/propietario/tiendas/1/clave', { method: 'POST', form: { x: '1' } }); const old1 = /\/panel\/nueva-clave\/([a-f0-9]{64})/.exec(r.text)[1];
+    r = await owner('/propietario/tiendas/1/clave', { method: 'POST', form: { x: '1' } }); const rt = /\/panel\/nueva-clave\/([a-f0-9]{64})/.exec(r.text)[1];
+    ok(r.text.includes('ana@cole.es') && r.text.includes('localhost:3201/panel/nueva-clave/'), 'enlace generado con el correo de la entidad');
+    r = await anon('/panel/nueva-clave/' + old1); ok(r.status === 404, 'generar otro enlace anula el anterior');
+    r = await anon('/panel/nueva-clave/' + 'b'.repeat(64)); ok(r.status === 404 && r.text.includes('no es válido'), 'enlace falso rechazado');
+    r = await get(anon, '/panel/nueva-clave/' + rt); ok(r.status === 200 && r.text.includes('CEIP Gloria Fuertes') && /noindex/.test(r.text), 'página de nueva contraseña');
+    r = await anon('/panel/nueva-clave/' + rt, { form: { new: 'corta', new2: 'corta' } }); ok(r.status === 400, 'contraseña corta rechazada');
+    r = await anon('/panel/nueva-clave/' + rt, { form: { new: 'nueva-clave-larga-2', new2: 'otra-distinta-22' } }); ok(r.status === 400 && r.text.includes('no coinciden'), 'contraseñas distintas rechazadas');
+    const webOld = client(base); await webOld('/panel/entrar', { form: { email: 'ana@cole.es', password: 'una-clave-larga-1' } });
+    r = await anon('/panel/nueva-clave/' + rt, { form: { new: 'nueva-clave-larga-2', new2: 'nueva-clave-larga-2' } }); ok(r.status === 302 && r.loc === '/panel/entrar?clave=ok', 'contraseña nueva guardada');
+    r = await webOld('/panel/dinero'); ok(r.status === 302, 'las sesiones abiertas con la clave antigua se cierran');
+    r = await anon('/panel/nueva-clave/' + rt); ok(r.status === 404, 'el enlace no sirve dos veces');
+    r = await client(base)('/panel/entrar', { form: { email: 'ana@cole.es', password: 'una-clave-larga-1' } }); ok(r.status === 401, 'la contraseña antigua ya no entra');
+    r = await web('/panel/entrar', { form: { email: 'ana@cole.es', password: 'nueva-clave-larga-2' } }); ok(r.status === 302 && r.loc === '/panel', 'entra con la contraseña nueva');
     r = await get(owner, '/propietario/retiradas'); ok(r.text.includes('11,00') && r.text.includes('Solicitada'), 'retirada pendiente visible');
     r = await owner('/propietario/retiradas/1', { form: { to: 'paid', note: 'Transf. 03/10' } }); ok(r.status === 302, 'retirada marcada como pagada');
     r = await get(owner, '/propietario/catalogo'); ok(r.text.includes('margen'), 'catálogo editable');
